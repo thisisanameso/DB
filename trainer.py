@@ -63,7 +63,7 @@ class Trainer:
 
         self.logger.report_time('Init')
 
-        model.train()
+        model.train()  //train 表示模型为训练模式 对应model.eval
         while True:
             self.logger.info('Training epoch ' + str(epoch))
             self.logger.epoch(epoch)
@@ -85,7 +85,7 @@ class Trainer:
                 self.train_step(model, optimizer, batch,
                                 epoch=epoch, step=self.steps)
                 if self.logger.verbose:
-                    torch.cuda.synchronize()
+                    torch.cuda.synchronize() //同步CPU和GPU之间的运算
                 self.logger.report_time('Forwarding ')
 
                 self.model_saver.maybe_save_model(
@@ -108,7 +108,7 @@ class Trainer:
 
         results = model.forward(batch, training=True)
         if len(results) == 2:
-            l, pred = results
+            l, pred = results   //l的含义？
             metrics = {}
         elif len(results) == 3:
             l, pred, metrics = results
@@ -117,8 +117,8 @@ class Trainer:
             line = []
             loss = torch.tensor(0.).cuda()
             for key, l_val in l.items():
-                loss += l_val.mean()
-                line.append('loss_{0}:{1:.4f}'.format(key, l_val.mean()))
+                loss += l_val.mean()  //loss为l的均值之和
+                line.append('loss_{0}:{1:.4f}'.format(key, l_val.mean())) //分别输出每项数据的loss
         else:
             loss = l.mean()
         loss.backward()
@@ -170,7 +170,7 @@ class Trainer:
         for i, batch in tqdm(enumerate(data_loader), total=len(data_loader)):
             pred = model.forward(batch, training=False)
             output = self.structure.representer.represent(batch, pred)
-            raw_metric, interested = self.structure.measurer.validate_measure(
+            raw_metric, interested = self.structure.measurer.validate_measure( //验证步骤
                 batch, output)
             raw_metrics.append(raw_metric)
 
@@ -178,7 +178,7 @@ class Trainer:
                 vis_image = self.structure.visualizer.visualize(
                     batch, output, interested)
                 vis_images.update(vis_image)
-        metrics = self.structure.measurer.gather_measure(
+        metrics = self.structure.measurer.gather_measure(  //gather ？
             raw_metrics, self.logger)
         return metrics, vis_images
 
